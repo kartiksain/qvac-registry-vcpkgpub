@@ -1,15 +1,8 @@
 vcpkg_from_github(
   OUT_SOURCE_PATH SOURCE_PATH
   REPO tetherto/qvac-ext-lib-llama.cpp
-  REF b${VERSION}
-  SHA512 32c0a06b6b4f2901af72ca37a1ca2ec3747e2f906f83c8cba7e45c91cc100e63513256f5519a674f690da3e80c0e5a9abc93a910ae3c5ffd08271e1978c0be2a
-  HEAD_REF master
-  PATCHES
-    "0001-fix-vcpkg-build.patch"
-    "0002-install-common-lib.patch"
-    "0003-cpp-wrappers-vulkan.patch"
-    "0004-patch-vulkan-compat.patch"
-    "0005-pass-opencl-dep.patch"
+  REF b${VERSION}-mtmd
+  SHA512 1a913d81d7dcafe02dfd76bb116681a198c903ff6ce7d9be0e671cf4654507ed542b7a415d882762ec8340a530b96dd7d72c6c6aa476f1d64ad5f3083a633dea
 )
 
 if (VCPKG_TARGET_IS_ANDROID)
@@ -60,7 +53,7 @@ vcpkg_cmake_configure(
     -DGGML_LLAMAFILE=OFF
     -DLLAMA_CURL=OFF
     -DLLAMA_BUILD_TESTS=OFF
-    -DLLAMA_BUILD_TOOLS=OFF
+    -DLLAMA_BUILD_TOOLS=ON
     -DLLAMA_BUILD_EXAMPLES=OFF
     -DLLAMA_BUILD_SERVER=OFF
     -DLLAMA_ALL_WARNINGS=OFF
