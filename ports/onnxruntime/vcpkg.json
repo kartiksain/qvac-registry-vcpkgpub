@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "name": "onnxruntime",
   "version": "1.21.0",
-  "port-version": 2,
+  "port-version": 3,
   "description": "ONNX Runtime: cross-platform, high performance ML inferencing and training accelerator",
   "homepage": "https://onnxruntime.ai/",
   "license": "MIT",
@@ -82,15 +82,17 @@
   "features": {
     "coreml-ep": {
       "description": "Build with CoreML EP",
-      "dependencies": [
-        "fp16"
-      ]
+      "supports": "osx | ios"
     },
     "dml-ep": {
       "description": "Build with CoreML EP",
       "dependencies": [
         "directx-headers"
       ]
+    },
+    "nnapi-ep": {
+      "description": "Build with Android NNAPI EP",
+      "supports": "android"
     },
     "tests": {
       "description": "Build ONNXRuntime unit tests",
