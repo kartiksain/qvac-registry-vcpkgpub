@@ -1,0 +1,16 @@
+name: Publish port
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types: [publish-port]
+
+jobs:
+  publish-port:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Dump github context
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+      run: echo "$GITHUB_CONTEXT"
