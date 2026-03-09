@@ -1,15 +1,15 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "name": "onnxruntime",
-  "version": "1.22.0",
-  "port-version": 3,
+  "version": "1.24.2",
+  "port-version": 0,
   "description": "ONNX Runtime: cross-platform, high performance ML inferencing and training accelerator",
   "homepage": "https://onnxruntime.ai/",
   "license": "MIT",
   "dependencies": [
     {
       "name": "abseil",
-      "version>=": "onnxruntime"
+      "version>=": "onnxruntime#1"
     },
     {
       "name": "benchmark",
@@ -43,7 +43,7 @@
     "nlohmann-json",
     {
       "name": "onnx",
-      "version>=": "onnxruntime"
+      "version>=": "onnxruntime#1"
     },
     "optional-lite",
     {

@@ -2,11 +2,10 @@ message(STATUS ">>> Building custom onnxruntime port with platform-specific patc
 
 # Common patches
 set(ONNXRUNTIME_PATCHES
-  "02-add-static-lib.patch"
   "03-fix-dll.patch"
   "04-fix-android-binary-size.patch"
-  "05-add-dependencies-to-config.patch"
   "06-fix-array-bounds-issue-ios-sim.patch"
+  "11-fix-tpause-clang.patch"
 )
 
 # Add extra patches only for Windows builds
@@ -14,6 +13,7 @@ if("dml-ep" IN_LIST FEATURES)
   message(STATUS "Applying Windows-specific patches (DirectML)...")
   list(APPEND ONNXRUNTIME_PATCHES
     "07-fix-dml-export.patch"
+    "12-fix-delayload-static-lib.patch"
   )
 endif()
 
@@ -23,15 +23,15 @@ if(VCPKG_CMAKE_SYSTEM_NAME STREQUAL "Darwin" OR VCPKG_CMAKE_SYSTEM_NAME STREQUAL
   list(APPEND ONNXRUNTIME_PATCHES
     "07-fix-coreml-export.patch"
     "08-fix-coreml-proto-include.patch"
+    "13-fix-coreml-availability.patch"
   )
 endif()
 
 # Add extra patches only for Android builds
+# Note: 07-fix-nnapi-export.patch is NOT needed for v1.24.2+ as EXPORT is already in the source
 if(VCPKG_CMAKE_SYSTEM_NAME STREQUAL "Android" AND NOT "minimal-build" IN_LIST FEATURES)
-  message(STATUS "Applying Android-specific patches (NNAPI)...")
-  list(APPEND ONNXRUNTIME_PATCHES
-    "07-fix-nnapi-export.patch"
-  ) 
+  message(STATUS "Android build detected (NNAPI EP enabled via features)")
+  # No additional patches needed for Android in v1.24.2+
 endif()
 
 # Add extra patches for XNNPack builds (TODO: as of v1.22.0, 10-fix-xnnpack-resize-empty-scales.patch is need. confirm if needed in future versions)
@@ -53,7 +53,7 @@ vcpkg_from_github(
   OUT_SOURCE_PATH SOURCE_PATH
   REPO microsoft/onnxruntime
   REF "v${VERSION}"
-  SHA512 32310215a3646c64ff5e0a309c3049dbe02ae9dd5bda8c89796bd9f86374d0f43443aed756b941d9af20ef1758bb465981ac517bbe8ac33661a292d81c59b152
+  SHA512 9f634692c0edb1910616c05b08e12ac20e393f637ca14d41fa46849dfd70a3719e1952af238fe862a2d77a3f0c66d03d1201b1739c85e193e102626413d6a041
   PATCHES ${ONNXRUNTIME_PATCHES}
 )
 
@@ -113,7 +113,7 @@ vcpkg_cmake_configure(
   SOURCE_PATH "${SOURCE_PATH}/cmake"
   OPTIONS
     -Donnxruntime_USE_VCPKG=ON
-    -Donnxruntime_BUILD_SHARED_LIB=ON
+    -Donnxruntime_BUILD_SHARED_LIB=OFF
     -Donnxruntime_ENABLE_BITCODE=OFF
     -Donnxruntime_ENABLE_PYTHON=OFF
     -Donnxruntime_DISABLE_RTTI=OFF
@@ -129,6 +129,21 @@ vcpkg_fixup_pkgconfig()
 vcpkg_cmake_config_fixup(
   CONFIG_PATH lib/cmake/onnxruntime
 )
+
+# Fix: Add INTERFACE_INCLUDE_DIRECTORIES to the main onnxruntime target
+set(CONFIG_FILE "${CURRENT_PACKAGES_DIR}/share/${PORT}/onnxruntimeTargets.cmake")
+file(READ "${CONFIG_FILE}" _contents)
+string(REPLACE
+  "# Create imported target onnxruntime::onnxruntime\nadd_library(onnxruntime::onnxruntime INTERFACE IMPORTED)\n\nset_target_properties(onnxruntime::onnxruntime PROPERTIES\n  INTERFACE_LINK_LIBRARIES"
+  "# Create imported target onnxruntime::onnxruntime\nadd_library(onnxruntime::onnxruntime INTERFACE IMPORTED)\n\nset_target_properties(onnxruntime::onnxruntime PROPERTIES\n  INTERFACE_INCLUDE_DIRECTORIES \"\${_IMPORT_PREFIX}/include/onnxruntime\"\n  INTERFACE_LINK_LIBRARIES"
+  _contents "${_contents}")
+file(WRITE "${CONFIG_FILE}" "${_contents}")
+
+# Fix: Change find_dependency(protobuf) to find_dependency(Protobuf) for case sensitivity
+set(CONFIG_FILE "${CURRENT_PACKAGES_DIR}/share/${PORT}/onnxruntimeConfig.cmake")
+file(READ "${CONFIG_FILE}" _contents)
+string(REPLACE "find_dependency(protobuf)" "find_dependency(Protobuf)" _contents "${_contents}")
+file(WRITE "${CONFIG_FILE}" "${_contents}")
 
 # Cleanup
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
