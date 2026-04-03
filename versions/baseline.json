@@ -14,7 +14,7 @@
     },
     "eigen3": {
       "baseline": "onnxruntime",
-      "port-version": 0
+      "port-version": 1
     },
     "intgemm": {
       "baseline": "1.0.0",
@@ -38,7 +38,7 @@
     },
     "onnxruntime": {
       "baseline": "1.24.2",
-      "port-version": 2
+      "port-version": 3
     },
     "opencl": {
       "baseline": "2024.10.24",
